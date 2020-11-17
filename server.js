@@ -4,18 +4,14 @@ const dotenv = require('dotenv');
 const morgan = require('morgan');
 const color = require('colors')
 const connectDB = require('./config/db')
-
-
+const errorHandler = require('./middleware/error')
 dotenv.config({ path: './config/config.env'});
-
-//database connect
-connectDB();
-
-
-
 const app = express();
 const bootcamps = require('./router/bootcamps');
 
+
+//database connect
+connectDB();
 
 // body parser
 
@@ -24,7 +20,7 @@ app.use(express.json())
 //dev logging middleware
 app.use(morgan('dev'))
 app.use('/api/v1/bootcamps', bootcamps);
-
+app.use(errorHandler)
 
 
 const PORT = process.env.PORT || 5000;
