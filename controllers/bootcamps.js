@@ -17,20 +17,21 @@ exports.getAllBootcamp = asyncHandler(async (req, res, next) => {
     };
 
     //field to exclude
-    const removeField = ['select', 'sort'];
+    const removeField = ['select', 'sort', 'limit'];
 
     //loop over removeFiled and delete them from req query
-    removeField.forEach(param => delete reqQuery[param]);
+    removeField.forEach(field => delete reqQuery[field]);
+    console.log(reqQuery)
+    console.log(req.query.select)
 
-
-    // send to server
+    // send to server translate to JSON
     let queryStr = JSON.stringify(reqQuery);
-
     // create query with operator filter
     queryStr = queryStr.replace(/\b(gte|gt|lt|lte|in)\b/g, match => `$${match}`);
 
 
     //finding resource
+
     query = Bootcamp.find(JSON.parse(queryStr));
 
     //jika permintaan ada select
@@ -49,15 +50,60 @@ exports.getAllBootcamp = asyncHandler(async (req, res, next) => {
         query = query.sort('-createdAt');
     }
 
+
+    //pagination
+    const page = parseInt(req.query.page, 10) || 1;
+    console.log('this is page ' + page)
+
+    const limit = parseInt(req.query.limit, 10) || 20;
+    console.log('this is limit ' + limit)
+
+    const startIndex = (page - 1) * limit;
+    console.log('this is startIndex ' + startIndex)
+
+    const endIndex = page * limit;
+    console.log('this is endIndex ' + endIndex)
+
+    const total = await Bootcamp.countDocuments();
+    console.log('this is total ' + total  )
+
+
+    query = query.skip(startIndex).limit(limit);
+    //executing query
     const bootcamp = await query
+
+    // pagination result 
+
+    const pagination = {};
+    
+    if (endIndex < total) {
+        pagination.next = {
+            page: page + 1,
+            limit
+        }
+        console.log(pagination)
+    }
+
+    if (startIndex > 0) {
+        pagination.prev = {
+            page: page - 1,
+            limit
+        }
+    }
+
 
     res.status(200).json({
         success: true,
         count: bootcamp.length,
+        pagination,
         data: bootcamp
     });
-    
+
 });
+
+
+
+
 
 // @desc  POST bootcamps
 // @route  POST /api/v1/bootcamps
@@ -71,7 +117,7 @@ exports.createBootcamp = asyncHandler(async (req, res, next) => {
         msg: "created bootcamp"
     });
 
-   
+
 })
 
 
@@ -111,7 +157,7 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
         success: true,
         data: bootcamp
     });
-   
+
 
 })
 
@@ -123,21 +169,6 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
 exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
 
 
-<<<<<<< HEAD
-        const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id);
-        //FOR MORE VALIDATION
-        if (!bootcamp) {
-            return next(new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404))
-        };
-        res.status(200).json({
-            success: true,
-            data: bootcamp,
-            msg: "deleted bootcamp"
-        });
-        console.log(`${req.params.id} deleted`)
-
-       
-=======
     const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id);
     //FOR MORE VALIDATION
     if (!bootcamp) {
@@ -150,13 +181,8 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
     });
     console.log(`${req.params.id} deleted`)
 
-    // res.status(400).json({
-    // success: false
-    // })
-    // next(new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404));
-    // next(err)
 
->>>>>>> dcac5663172f1e61a2991c17a144deeecfa50d85
+
 })
 
 // @desc  get bootcamps within a radius
