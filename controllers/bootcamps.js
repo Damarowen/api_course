@@ -103,8 +103,6 @@ exports.getAllBootcamp = asyncHandler(async (req, res, next) => {
 
 
 
-
-
 // @desc  POST bootcamps
 // @route  POST /api/v1/bootcamps
 // @access  Public

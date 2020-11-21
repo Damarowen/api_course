@@ -7,11 +7,17 @@ const connectDB = require('./config/db')
 const errorHandler = require('./middleware/error')
 dotenv.config({ path: './config/config.env'});
 const app = express();
-const bootcamps = require('./router/bootcamps');
-
 
 //database connect
 connectDB();
+
+
+// route files
+const bootcamps = require('./router/bootcamps');
+const courses = require('./router/courses');
+
+
+
 
 // body parser
 
@@ -19,7 +25,11 @@ app.use(express.json())
 
 //dev logging middleware
 app.use(morgan('dev'))
+
+// mount routers
 app.use('/api/v1/bootcamps', bootcamps);
+app.use('/api/v1/courses', courses);
+
 app.use(errorHandler)
 
 
