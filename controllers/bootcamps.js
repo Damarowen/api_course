@@ -32,7 +32,7 @@ exports.getAllBootcamp = asyncHandler(async (req, res, next) => {
 
     //finding resource
 
-    query = Bootcamp.find(JSON.parse(queryStr));
+    query = Bootcamp.find(JSON.parse(queryStr)).populate('fromCourses');
 
     //jika permintaan ada select
     if (req.query.select) {
@@ -167,14 +167,18 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
 exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
 
 
-    const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id);
+    const bootcamp = await Bootcamp.findById(req.params.id);
     //FOR MORE VALIDATION
     if (!bootcamp) {
         return next(new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404))
     };
+
+    //trigger middleware cascade remove
+    bootcamp.remove();
+    
     res.status(200).json({
         success: true,
-        data: bootcamp,
+        data: {},
         msg: "deleted bootcamp"
     });
     console.log(`${req.params.id} deleted`)
