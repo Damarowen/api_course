@@ -134,9 +134,9 @@ BootcampSchema.pre('save', async function(next) {
   next();
 });
 
-
-//thi is a middleware for deleate all asssoicated course in bootcmap
-// cascade delete courses when a bootcamps is deleted
+// CASCADE DELETE
+//thi is a MIDDLEWARE for deleate all asssoicated course in bootcmap
+// it DELETE a courses when a bootcamps is deleted
 BootcampSchema.pre('remove', async function(next){
   console.log(`Course being removed from bootcamp ${this._id} ${this.name}`);
   await this.model('Course').deleteMany({bootcamp: this._id});

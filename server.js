@@ -1,5 +1,7 @@
 const express = require('express');
+const path = require('path')
 const dotenv = require('dotenv');
+const fileUpload = require('express-fileUpload')
 // const logger = require('./middleware/logger');
 const morgan = require('morgan');
 const color = require('colors')
@@ -25,6 +27,12 @@ app.use(express.json())
 
 //dev logging middleware
 app.use(morgan('dev'))
+
+//set static folder for uploads
+app.use(express.static(path.join(__dirname, 'public')))
+
+//file uploading
+app.use(fileUpload());
 
 // mount routers
 app.use('/api/v1/bootcamps', bootcamps);
