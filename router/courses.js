@@ -1,4 +1,7 @@
 const express = require('express');
+const Course = require('../models/Course');
+const advanceResults = require('../middleware/advanceResults');
+
 const {
     getCourses,
     getCourse,
@@ -7,10 +10,16 @@ const {
     deleteCourse
 } = require('../controllers/courses')
 
+
+
 const router = express.Router({
     mergeParams: true
 });
-router.route('/').get(getCourses).post(addCourse);
+router.route('/').get(advanceResults(Course, {
+    // path merujuk pada objek yang dicari dalam model
+    path: 'bootcamp',
+    select: 'name description'
+}), getCourses).post(addCourse);
 router.route('/:id').get(getCourse).put(updateCourse).delete(deleteCourse);
 
 

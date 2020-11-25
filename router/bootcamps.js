@@ -1,4 +1,8 @@
 const express = require('express');
+// for advanceResults middleware
+const Bootcamp = require('../models/Bootcamp');
+const advanceResults = require('../middleware/advanceResults');
+
 const {
     getAllBootcamp,
     createBootcamp,
@@ -10,9 +14,11 @@ const {
 } = require('../controllers/bootcamps')
 
 
+
+
 const router = express.Router();
 
-router.route('/').get(getAllBootcamp).post(createBootcamp);
+router.route('/').get(advanceResults(Bootcamp, 'fromCourses'), getAllBootcamp).post(createBootcamp);
 router.route('/:id').get(getBootcamp).put(updateBootcamp).delete(deleteBootcamp);
 router.route('/radius/:zipcode/:distance').get(getBootcampsInRadius)
 router.route('/:id/photo').put(bootcampPhotoUpload)
