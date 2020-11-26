@@ -1,7 +1,8 @@
 const express = require('express');
 const path = require('path')
 const dotenv = require('dotenv');
-const fileUpload = require('express-fileUpload')
+const fileUpload = require('express-fileUpload');
+const cookierParser = require('cookie-parser');
 // const logger = require('./middleware/logger');
 const morgan = require('morgan');
 const color = require('colors')
@@ -24,11 +25,13 @@ const auth = require('./router/auth');
 
 
 // body parser
+app.use(express.json());
 
-app.use(express.json())
+// Cookie parser
+app.use(cookierParser());
 
 //dev logging middleware
-app.use(morgan('dev'))
+app.use(morgan('dev'));
 
 //set static folder for uploads
 app.use(express.static(path.join(__dirname, 'public')))
