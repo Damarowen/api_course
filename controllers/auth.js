@@ -162,8 +162,10 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
 
     const user = await User.findOne({
         resetPasswordToken,
-        resetPasswordExpire: { $gt: Date.now() }
-      });
+        resetPasswordExpire: {
+            $gt: Date.now()
+        }
+    });
 
 
     if (!user) {
@@ -182,6 +184,54 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
 
 
 
+
+
+// @desc  update user details
+// @route  PUT /api/v1/auth/updatedetails
+// @access  PRIVATE
+
+exports.updateDetails = asyncHandler(async (req, res, next) => {
+
+    const fieldsToUpdate = {
+        name: req.body.name,
+        email: req.body.email
+    }
+
+    const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
+        new: true,
+        runValidators: true
+    })
+
+    res.status(200).json({
+        success: true,
+        data: user
+    })
+
+})
+
+
+// @desc  update password
+// @route  PUT /api/v1/auth/updatePassword
+// @access  PRIVATE
+
+exports.updatePassword = asyncHandler(async (req, res, next) => {
+
+    // select +password mengembalikan query password
+    const user = await User.findById(req.user.id).select('+password')
+    console.log(req.body.currentPassword)
+
+    //check current password from user input
+    if (!(await user.matchPassword(req.body.currentPassword))) {
+        return next(new ErrorResponse('Password incorect', 401))
+    }
+
+    user.password = req.body.newPassword;
+    await user.save();
+
+    sendTokenResponse(user, 200, res)
+})
+
+
 //THIS IS COOKIES
 // get token from model, create cookie and send roesponse
 const sendTokenResponse = (user, statusCode, res) => {
@@ -198,6 +248,7 @@ const sendTokenResponse = (user, statusCode, res) => {
 
     res.status(statusCode).cookie('token', token, options).json({
         success: true,
-        token
+        token,
+        data: user
     });
 }
