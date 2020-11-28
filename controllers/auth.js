@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const asyncHandler = require('../middleware/async');
 const ErrorResponse = require('../utils/errorResponse');
+const sendEmail = require('../utils/sendEmail');
 
 // @desc  register user
 // @route  POST /api/v1/auth/register
@@ -68,6 +69,84 @@ exports.login = asyncHandler(async (req, res, next) => {
 })
 
 
+
+// @desc  GET current user log in
+// @route  POST /api/v1/auth/me
+// @access  PRIVATE
+
+exports.getMe = asyncHandler(async (req, res, next) => {
+
+
+    const user = await User.findById(req.user.id)
+
+    res.status(200).json({
+        success: true,
+        data: user
+    })
+
+})
+
+// @desc  forgot password
+// @route  POST /api/v1/auth/forgotpassword
+// @access  PRIVATE
+
+exports.forgotPassword = asyncHandler(async (req, res, next) => {
+
+
+    const user = await User.findOne({
+        email: req.body.email
+    })
+
+    if (!user) {
+        return next(new ErrorResponse('User not found', 404))
+    }
+
+    // get reset token by create method in model
+    const resetToken = user.getResetPasswordToken();
+
+    // save and dont run validate
+    await user.save({
+        validateBeforeSave: false
+    })
+
+    // Create reset url
+
+    const resetUrl = (`${req.protocol}://${req.get('host')}/api/v1/resetPasssword/${resetToken}`);
+    const message = `ini link untuk reset \n\n ${resetUrl}`;
+
+
+    //send email using nodemailer
+    try {
+        await sendEmail({
+            email: user.email,
+            subject: 'Password Reset Token',
+            message
+        })
+
+        res.status(200).json({
+            success: true,
+            data: "email sent"
+        })
+    } catch (err) {
+        console.log(err);
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+        // save and dont run validate
+        await user.save({
+            validateBeforeSave: false
+        })
+        return next(new ErrorResponse('Email could not be sent', 500))
+    }
+
+    //below is to display user after reset
+    // res.status(200).json({
+        // success: true,
+        // data: user
+    // })
+
+})
+
+
 //THIS IS COOKIES
 // get token from model, create cookie and send roesponse
 const sendTokenResponse = (user, statusCode, res) => {
@@ -79,31 +158,11 @@ const sendTokenResponse = (user, statusCode, res) => {
     };
 
     // if (process.env.NODE_ENV === 'production') {
-        // options.secure = true;
+    // options.secure = true;
     // }
 
     res.status(statusCode).cookie('token', token, options).json({
-            success: true,
-            token
-        });
-
-
+        success: true,
+        token
+    });
 }
-
-// @desc  GET current user log in
-// @route  POST /api/v1/auth/me
-// @access  PRIVATE
-
-exports.getMe = asyncHandler( async (req,res,next) =>{
-
-
-const user = await User.findById(req.user.id)
-
-res.status(200).json({
-    success: true,
-    data: user
-})
-
-
-
-})

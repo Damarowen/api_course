@@ -94,14 +94,23 @@ const BootcampSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  user: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: true
+  },
   createdAt: {
     type: Date,
     default: Date.now
   }
-   
+
 }, {
-  toJSON: { virtuals : true},
-  toObject: { virtuals : true}
+  toJSON: {
+    virtuals: true
+  },
+  toObject: {
+    virtuals: true
+  }
 });
 
 // create bootcamp slug from name
@@ -116,7 +125,7 @@ BootcampSchema.pre('save', function (next) {
 
 
 // Geocode & create location field
-BootcampSchema.pre('save', async function(next) {
+BootcampSchema.pre('save', async function (next) {
   const loc = await geocoder.geocode(this.address);
   this.location = {
     type: 'Point',
@@ -137,9 +146,11 @@ BootcampSchema.pre('save', async function(next) {
 // CASCADE DELETE
 //thi is a MIDDLEWARE for deleate all asssoicated course in bootcmap
 // it DELETE a courses when a bootcamps is deleted
-BootcampSchema.pre('remove', async function(next){
+BootcampSchema.pre('remove', async function (next) {
   console.log(`Course being removed from bootcamp ${this._id} ${this.name}`);
-  await this.model('Course').deleteMany({bootcamp: this._id});
+  await this.model('Course').deleteMany({
+    bootcamp: this._id
+  });
   next();
 })
 
