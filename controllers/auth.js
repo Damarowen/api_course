@@ -2,6 +2,7 @@ const User = require('../models/User');
 const asyncHandler = require('../middleware/async');
 const ErrorResponse = require('../utils/errorResponse');
 const sendEmail = require('../utils/sendEmail');
+const crypto = require('crypto')
 
 // @desc  register user
 // @route  POST /api/v1/auth/register
@@ -111,7 +112,7 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
 
     // Create reset url
 
-    const resetUrl = (`${req.protocol}://${req.get('host')}/api/v1/resetPasssword/${resetToken}`);
+    const resetUrl = (`${req.protocol}://${req.get('host')}/api/v1/auth/resetPassword/${resetToken}`);
     const message = `ini link untuk reset \n\n ${resetUrl}`;
 
 
@@ -140,11 +141,45 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
 
     //below is to display user after reset
     // res.status(200).json({
-        // success: true,
-        // data: user
+    // success: true,
+    // data: user
     // })
 
 })
+
+
+
+
+
+// @desc  RESET PASSWORD
+// @route  Put /api/v1/auth/resetPassword/:resertoken
+// @access  PRIVATE
+
+exports.resetPassword = asyncHandler(async (req, res, next) => {
+
+    // get hashed token
+    const resetPasswordToken = crypto.createHash('sha256').update(req.params.resettoken).digest('hex');
+
+    const user = await User.findOne({
+        resetPasswordToken,
+        resetPasswordExpire: { $gt: Date.now() }
+      });
+
+
+    if (!user) {
+        return next(new ErrorResponse('Invalid token', 400))
+    }
+
+    // set new password
+    user.password = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+    sendTokenResponse(user, 200, res)
+
+})
+
 
 
 //THIS IS COOKIES

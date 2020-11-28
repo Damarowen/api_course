@@ -8,8 +8,8 @@ const sendEmail = async (options) => {
         host: "smtp.mailtrap.io",
         port: 2525,
         auth: {
-            user: process.env.SMPT_USER, // generated ethereal user
-            pass: process.env.SMPT_PASSWORD, // generated ethereal password
+            user: process.env.SMTP_USER, // generated ethereal user
+            pass: process.env.SMTP_PASSWORD, // generated ethereal password
         },
     });
 
