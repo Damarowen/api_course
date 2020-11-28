@@ -19,6 +19,7 @@ connectDB();
 const bootcamps = require('./router/bootcamps');
 const courses = require('./router/courses');
 const auth = require('./router/auth');
+const users = require('./router/users');
 
 
 
@@ -43,6 +44,7 @@ app.use(fileUpload());
 app.use('/api/v1/bootcamps', bootcamps);
 app.use('/api/v1/courses', courses);
 app.use('/api/v1/auth/', auth);
+app.use('/api/v1/users', users);
 
 
 app.use(errorHandler)
