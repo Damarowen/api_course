@@ -25,9 +25,15 @@ router.route('/:id/photo').put(protect, authorize('publisher', 'admin'), bootcam
 // re-route into other resource routers
 //GET /api/v1/bootcamps/:bootcampId/courses
 const courseRouter = require('./courses');
+const reviewRouter = require('./reviews');
+
 
 ///:bootcampId/courses is same to /api/v1/courses
 router.use('/:bootcampId/courses', courseRouter)
+
+
+router.use('/:bootcampId/reviews', reviewRouter)
+
 
 
 module.exports = router;
