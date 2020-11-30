@@ -9,6 +9,16 @@ const color = require('colors')
 const connectDB = require('./config/db')
 const errorHandler = require('./middleware/error')
 dotenv.config({ path: './config/config.env'});
+
+//security
+const mongoSanitize = require('express-mongo-sanitize');
+const helmet = require('helmet');
+const xss = require('xss-clean');
+const hpp = require('hpp');
+const rateLimit = require('express-rate-limit');
+const cors = require('cors');
+
+
 const app = express();
 
 //database connect
@@ -39,6 +49,29 @@ app.use(morgan('dev'));
 //set static folder for uploads
 app.use(express.static(path.join(__dirname, 'public')))
 
+//**SECURITY */
+// sanitize data
+app.use(mongoSanitize());
+//set secuirty header
+app.use(helmet());
+//prevent XSS attacks
+app.use(xss());
+// Rate limiting
+const limiter = rateLimit({
+    windowMs: 10 * 60 * 1000, // 10 MIN
+    max: 100// max 100 req per 10 min
+});
+
+app.use(limiter);
+
+// prevent http param pollution
+app.use(hpp());
+
+// enable Cross Origin Resource Sharing
+app.use(cors());
+//**END */
+
+
 //file uploading
 app.use(fileUpload());
 
@@ -48,6 +81,7 @@ app.use('/api/v1/courses', courses);
 app.use('/api/v1/auth/', auth);
 app.use('/api/v1/users', users);
 app.use('/api/v1/reviews', reviews);
+
 
 
 
