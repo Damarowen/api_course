@@ -149,8 +149,6 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
 
 
 
-
-
 // @desc  RESET PASSWORD
 // @route  Put /api/v1/auth/resetPassword/:resertoken
 // @access  PRIVATE
@@ -229,6 +227,27 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
     await user.save();
 
     sendTokenResponse(user, 200, res)
+});
+
+
+// @desc  log user out / clear cookies
+// @route  POST /api/v1/auth/logout
+// @access  PRIVATE
+
+exports.logout = asyncHandler(async (req, res, next) => {
+
+    res.cookie('token', 'none', {
+        //expires 10 second
+        expires: new Date(Date.now() + 10 + 1000),
+        httpOnly: true
+
+    })
+
+    res.status(200).json({
+        success: true,
+        data: {}
+    })
+
 })
 
 
